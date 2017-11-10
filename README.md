@@ -70,6 +70,30 @@ endpoint - The url to the Lambda function that you set up to run a single task.
 params - Any parameters that define the specific variables needed to run your Lambda function for this task.
 ```
 
+An example payload might look like this:
+
+```
+{
+  "callback": "http://myapi.com/endpoint/receive/results",
+  "tasks": [
+    {
+      "endpoint": "http://mylambdafunction.com/endpoint",
+      "params": {
+        "variable_a": "22",
+        "variable_b": "44"
+      }
+    },
+    {
+      "endpoint": "http://mylambdafunction.com/endpoint",
+      "params": {
+        "variable_a": "12",
+        "variable_b": "14"
+      }
+    }
+  ]
+}
+```
+
 When all tasks in your job have finished, a results object will be posted to your specified callback url containing the overall job status, status message, and result:
 
 ```

@@ -15,7 +15,7 @@ class Manager(object):
         self.tasks = self.payload['tasks']
         self.job_id = str(uuid.uuid4())
         sqs = boto3.resource('sqs')
-        sqs.create_queue(QueueName=self.job_id, Attributes={'total': len(self.tasks)})
+        sqs.create_queue(QueueName=self.job_id)
         url = os.environ.get('DO_TASK_URL', None)
 
         if url is None:
