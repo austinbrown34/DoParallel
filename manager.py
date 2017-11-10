@@ -23,7 +23,6 @@ class Manager(object):
 
         for i, task in enumerate(self.tasks):
             data = {
-                'task': task['task'],
                 'endpoint': task['endpoint'],
                 'params': task['params'],
                 'total': len(self.tasks),

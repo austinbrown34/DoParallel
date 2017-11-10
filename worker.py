@@ -9,7 +9,6 @@ class Worker(object):
         self.payload = payload
         self.endpoint = payload['endpoint']
         self.params = payload['params']
-        self.task = payload['task']
         self.total = payload['total']
         self.id = payload['id']
         self.job_id = payload['job_id']
