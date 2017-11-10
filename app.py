@@ -15,6 +15,15 @@ def do_parallel():
     return "Let's Do it Parallel!"
 
 
+@app.route('/v1/test', methods=['POST'])
+def test_job():
+    print('test job!')
+    if not (request.json):
+        abort(400)
+
+    return jsonify({"result": "true"})
+
+
 @app.route('/v1/finish', methods=['POST'])
 def finish_job():
     print('finish job!')

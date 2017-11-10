@@ -23,7 +23,7 @@ class Worker(object):
             self.endpoint,
             json=json.dumps(self.params)
         )
-        self.report_task(response)
+        self.report_task(response.json)
         self.check_job_status()
 
         return {"status": "Success", "msg": "Task Executed"}
@@ -38,9 +38,11 @@ class Worker(object):
                 'status': 'Complete'
             }
         })
+        print('sent message to queue')
 
 
     def check_job_status(self):
+        print('check queue')
         sqs = boto3.resource('sqs')
         queue = sqs.get_queue_by_name(QueueName=self.job_id)
         completed_tasks = int(queue.attributes.get('ApproximateNumberOfMessages'))
@@ -49,6 +51,7 @@ class Worker(object):
 
 
     def notify_manager(self):
+        print('notify manager')
         url = os.environ.get('FINISH_JOB_URL', None)
         if url is None:
             return {"status": "Error", "msg": "FINISH_JOB_URL not set."}

@@ -40,6 +40,7 @@ class Manager(object):
 
 
     def finish_job(self):
+        print('finish job')
         self.job_id = self.payload['job_id']
         result = self.collect_work()
         return {"status": "Success", "msg": "Job Finished", "result": result}
@@ -49,6 +50,7 @@ class Manager(object):
         """ Use self.job_id to get all task reports in SQS and compile
             final results
         """
+        print('collect work')
         results = {}
         sqs = boto3.resource('sqs')
         queue = sqs.get_queue_by_name(QueueName=self.job_id)
