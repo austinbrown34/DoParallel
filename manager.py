@@ -25,6 +25,7 @@ class Manager(object):
             data = {
                 'task': task['task'],
                 'endpoint': task['endpoint'],
+                'params': task['params'],
                 'total': len(self.tasks),
                 'id': i,
                 'job_id': self.job_id

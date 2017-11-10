@@ -8,6 +8,7 @@ class Worker(object):
     def __init__(self, payload):
         self.payload = payload
         self.endpoint = payload['endpoint']
+        self.params = payload['params']
         self.task = payload['task']
         self.total = payload['total']
         self.id = payload['id']
@@ -17,7 +18,7 @@ class Worker(object):
     def do_task(self):
         response = requests.post(
             self.endpoint,
-            data=self.task
+            data=self.params
         )
         self.report_task(response)
         self.check_job_status()
