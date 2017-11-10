@@ -30,7 +30,8 @@ class Manager(object):
                 'params': task['params'],
                 'total': len(self.tasks),
                 'id': i,
-                'job_id': self.job_id
+                'job_id': self.job_id,
+                'callback': self.callback
             }
             requests.post(
                 url,

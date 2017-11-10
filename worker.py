@@ -13,6 +13,7 @@ class Worker(object):
         self.total = payload['total']
         self.id = payload['id']
         self.job_id = payload['job_id']
+        self.callback = payload['callback']
 
 
     def do_task(self):
@@ -62,7 +63,8 @@ class Worker(object):
         if url is None:
             return {"status": "Error", "msg": "FINISH_JOB_URL not set."}
         data = {
-            'job_id': self.job_id
+            'job_id': self.job_id,
+            'callback': self.callback
         }
         requests.post(
             url,
