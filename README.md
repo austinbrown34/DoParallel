@@ -121,6 +121,7 @@ When all tasks in your job have finished, a results object will be posted to you
 }
 ```
 
+* To test DoParallel without a separate Lambda setup for your task execution, you can use the '/v1/test' endpoint of your Lambda url as an endpoint for your tasks.
 
 ## Authors
 
