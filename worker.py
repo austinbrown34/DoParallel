@@ -10,7 +10,6 @@ class Worker(object):
         self.endpoint = payload['endpoint']
         self.task = payload['task']
         self.total = payload['total']
-        self.completed_bucket = payload['completed_bucket']
         self.id = payload['id']
         self.job_id = payload['job_id']
 
@@ -27,24 +26,21 @@ class Worker(object):
 
 
     def report_task(self, response):
-        session = boto3.Session()
-        s3 = session.resource('s3')
-        os.mkdir(self.job_id)
-        path = os.path.join(
-            self.job_id,
-            '{}.txt'.format(id)
-        )
-        report = file(path, 'w')
-        report.write(response)
-        report.close()
-        s3.meta.client.upload_file(
-            path, self.completed_bucket, path
-        )
+        sqs = boto3.resource('sqs')
+        queue = sqs.get_queue_by_name(QueueName=self.job_id)
+        queue.send_message(MessageBody=response, MessageAttributes={
+            'Info': {
+                'task_id': str(self.id),
+                'status': 'Complete'
+            }
+        })
+
 
     def check_job_status(self):
-        s3 = boto3.resource('s3')
-        bucket = s3.Bucket(self.completed_bucket)
-        if len(bucket.objects.all()) == self.total:
+        sqs = boto3.resource('sqs')
+        queue = sqs.get_queue_by_name(QueueName=self.job_id)
+        completed_tasks = int(queue.attributes.get('ApproximateNumberOfMessages'))
+        if completed_tasks == self.total:
             self.notify_manager()
 
 

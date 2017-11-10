@@ -1,6 +1,7 @@
 import requests
 import os
 import uuid
+import boto3
 
 
 class Manager(object):
@@ -13,18 +14,18 @@ class Manager(object):
     def do_job(self):
         self.tasks = self.payload['tasks']
         self.job_id = str(uuid.uuid4())
+        sqs = boto3.resource('sqs')
+        sqs.create_queue(QueueName=self.job_id, Attributes={'total': len(self.tasks)})
         url = os.environ.get('DO_TASK_URL', None)
-        completed_bucket = os.environ.get('COMPLETED_BUCKET', None)
+
         if url is None:
             return {"status": "Error", "msg": "DO_TASK_URL not set."}
-        if completed_bucket is None:
-            return {"status": "Error", "msg": "COMPLETED_BUCKET not set."}
+
         for i, task in enumerate(self.tasks):
             data = {
                 'task': task['task'],
                 'endpoint': task['endpoint'],
                 'total': len(self.tasks),
-                'completed_bucket': completed_bucket,
                 'id': i,
                 'job_id': self.job_id
             }
@@ -42,8 +43,20 @@ class Manager(object):
 
 
     def collect_work(self):
-        """ Use self.job_id to get all task reports in S3 and compile
+        """ Use self.job_id to get all task reports in SQS and compile
             final results
         """
-        result = {}
-        return result
+        results = {}
+        sqs = boto3.resource('sqs')
+        queue = sqs.get_queue_by_name(QueueName=self.job_id)
+        for message in queue.receive_messages():
+            task_id = message.message_attributes.get('Info').get('task_id')
+            status = message.message_attributes.get('Info').get('status')
+            result = message.body
+            results[task_id] = {
+                'status': status,
+                'result': result
+            }
+            message.delete()
+
+        return results
