@@ -65,6 +65,7 @@ class Manager(object):
                     'result': result
                 }
             message.delete()
+        queue.delete()
         print('results:')
         print(results)
 
