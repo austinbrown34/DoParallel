@@ -43,6 +43,7 @@ class Manager(object):
     def finish_job(self):
         print('finish job')
         self.job_id = self.payload['job_id']
+        self.total = self.payload['total']
         result = self.collect_work()
         return {"status": "Success", "msg": "Job Finished", "result": result}
 
@@ -55,16 +56,19 @@ class Manager(object):
         results = {}
         sqs = boto3.resource('sqs')
         queue = sqs.get_queue_by_name(QueueName=self.job_id)
-        for message in queue.receive_messages(MessageAttributeNames=['Task', 'Status']):
-            if message.message_attributes is not None:
-                task_id = message.message_attributes.get('Task').get('StringValue')
-                status = message.message_attributes.get('Status').get('StringValue')
-                result = message.body
-                results[task_id] = {
-                    'status': status,
-                    'result': result
-                }
-            message.delete()
+        message_counter = 0
+        while message_counter < self.total:
+            for message in queue.receive_messages(MessageAttributeNames=['Task', 'Status'], MaxNumberOfMessages=123):
+                if message.message_attributes is not None:
+                    task_id = message.message_attributes.get('Task').get('StringValue')
+                    status = message.message_attributes.get('Status').get('StringValue')
+                    result = message.body
+                    results[task_id] = {
+                        'status': status,
+                        'result': result
+                    }
+                message.delete()
+                message_counter = message_counter + 1
         queue.delete()
         print('results:')
         print(results)

@@ -64,7 +64,8 @@ class Worker(object):
             return {"status": "Error", "msg": "FINISH_JOB_URL not set."}
         data = {
             'job_id': self.job_id,
-            'callback': self.callback
+            'callback': self.callback,
+            'total': self.total
         }
         requests.post(
             url,
