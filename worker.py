@@ -1,6 +1,7 @@
 import requests
 import boto3
 import os
+import json
 
 
 class Worker(object):
@@ -16,9 +17,11 @@ class Worker(object):
 
     def do_task(self):
         print('worker: do task')
+        print(self.endpoint)
+        print(self.params)
         response = requests.post(
             self.endpoint,
-            json=self.params
+            json=json.dumps(self.params)
         )
         self.report_task(response)
         self.check_job_status()
