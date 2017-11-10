@@ -10,9 +10,6 @@ These instructions will get you a copy of the project up and running on AWS Lamb
 
 Before you begin, make sure you are running Python 2.7 or Python 3.6 and you have a valid AWS account and your AWS credentials file is properly installed. Please note that DoParallel must be installed into your project's virtual environment.
 
-```
-Give examples
-```
 
 ### Installing
 
