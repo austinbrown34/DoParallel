@@ -58,7 +58,7 @@ class Manager(object):
         queue = sqs.get_queue_by_name(QueueName=self.job_id)
         message_counter = 0
         while message_counter < self.total:
-            for message in queue.receive_messages(MessageAttributeNames=['Task', 'Status'], MaxNumberOfMessages=123):
+            for message in queue.receive_messages(MessageAttributeNames=['Task', 'Status'], MaxNumberOfMessages=10):
                 if message.message_attributes is not None:
                     task_id = message.message_attributes.get('Task').get('StringValue')
                     status = message.message_attributes.get('Status').get('StringValue')
