@@ -49,6 +49,13 @@ zappa init
 zappa deploy
 ```
 
+7. Login to Lambda Console and Set Environment Variables
+
+```
+FINISH_JOB_URL: '/v1/finish' endpoint of your Lambda url
+DO_TASK_URL: '/v1/task' endpoint of your Lambda url
+```
+
 
 ### Usage
 
