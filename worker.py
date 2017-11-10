@@ -34,7 +34,7 @@ class Worker(object):
         print(response)
         sqs = boto3.resource('sqs')
         queue = sqs.get_queue_by_name(QueueName=self.job_id)
-        queue.send_message(MessageBody=response, MessageAttributes={
+        queue.send_message(MessageBody=json.dumps(response), MessageAttributes={
             'Status': {
                 'StringValue': 'Complete',
                 'DataType': 'String'
