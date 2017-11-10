@@ -30,12 +30,18 @@ class Worker(object):
 
 
     def report_task(self, response):
+        print('report task response:')
+        print(response)
         sqs = boto3.resource('sqs')
         queue = sqs.get_queue_by_name(QueueName=self.job_id)
         queue.send_message(MessageBody=response, MessageAttributes={
-            'Info': {
-                'task_id': str(self.id),
-                'status': 'Complete'
+            'Status': {
+                'StringValue': 'Complete',
+                'DataType': 'String'
+            },
+            'Task_id': {
+                'StringValue': str(self.id),
+                'DataType': 'String'
             }
         })
         print('sent message to queue')
