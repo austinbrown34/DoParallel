@@ -12,6 +12,7 @@ class Manager(object):
 
 
     def do_job(self):
+        print('manager: do job!')
         self.tasks = self.payload['tasks']
         self.job_id = str(uuid.uuid4())
         sqs = boto3.resource('sqs')
@@ -22,6 +23,8 @@ class Manager(object):
             return {"status": "Error", "msg": "DO_TASK_URL not set."}
 
         for i, task in enumerate(self.tasks):
+            print('task:')
+            print(task)
             data = {
                 'endpoint': task['endpoint'],
                 'params': task['params'],
@@ -31,7 +34,7 @@ class Manager(object):
             }
             requests.post(
                 url,
-                data=data,
+                json=data,
             )
         return {"status": "Success", "msg": "Job Executed"}
 

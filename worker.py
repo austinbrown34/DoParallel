@@ -15,9 +15,10 @@ class Worker(object):
 
 
     def do_task(self):
+        print('worker: do task')
         response = requests.post(
             self.endpoint,
-            data=self.params
+            json=self.params
         )
         self.report_task(response)
         self.check_job_status()
@@ -53,5 +54,5 @@ class Worker(object):
         }
         requests.post(
             url,
-            data=data,
+            json=data,
         )

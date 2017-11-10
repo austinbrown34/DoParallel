@@ -17,6 +17,7 @@ def do_parallel():
 
 @app.route('/v1/finish', methods=['POST'])
 def finish_job():
+    print('finish job!')
     if not (request.json):
         abort(400)
     manager = Manager(request.json)
@@ -27,6 +28,7 @@ def finish_job():
 
 @app.route('/v1/task', methods=['POST'])
 def do_task():
+    print('do task!')
     if not (request.json):
         abort(400)
     worker = Worker(request.json)
@@ -37,6 +39,7 @@ def do_task():
 
 @app.route('/v1/job', methods=['POST'])
 def do_job():
+    print('do job!')
     if not (request.json):
         abort(400)
     manager = Manager(request.json)
