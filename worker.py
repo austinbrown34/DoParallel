@@ -23,7 +23,7 @@ class Worker(object):
             self.endpoint,
             json=json.dumps(self.params)
         )
-        self.report_task(response.json)
+        self.report_task(response.json())
         self.check_job_status()
 
         return {"status": "Success", "msg": "Task Executed"}
