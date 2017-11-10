@@ -40,7 +40,7 @@ class Worker(object):
                 'StringValue': 'Complete',
                 'DataType': 'String'
             },
-            'Task_id': {
+            'Task': {
                 'StringValue': str(self.id),
                 'DataType': 'String'
             }

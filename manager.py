@@ -55,14 +55,15 @@ class Manager(object):
         results = {}
         sqs = boto3.resource('sqs')
         queue = sqs.get_queue_by_name(QueueName=self.job_id)
-        for message in queue.receive_messages():
-            task_id = message.message_attributes.get('Task_id').get('StringValue')
-            status = message.message_attributes.get('Status').get('StringValue')
-            result = message.body
-            results[task_id] = {
-                'status': status,
-                'result': result
-            }
+        for message in queue.receive_messages(MessageAttributeNames=['Task', 'Status']):
+            if message.message_attributes is not None:
+                task_id = message.message_attributes.get('Task').get('StringValue')
+                status = message.message_attributes.get('Status').get('StringValue')
+                result = message.body
+                results[task_id] = {
+                    'status': status,
+                    'result': result
+                }
             message.delete()
         print('results:')
         print(results)
