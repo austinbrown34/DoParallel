@@ -94,10 +94,24 @@ class Manager(object):
         )
 
 
+    def update_job_result(self, result):
+        key = {
+            'job_id': self.job_id,
+            'job_status': 'Complete'
+        }
+        expression = "set job_result = :r"
+
+        values = {
+            ':r': result
+        }
+
+        self.dbliason.update_item(key, expression, values, 'Jobs')
+
 
     def finish_job(self):
         self.update_job_status('Complete')
         result = self.collect_work()
+        self.update_job_result(result)
         return {"status": "Complete", "msg": "Job Finished", "result": result}
 
 
