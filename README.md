@@ -1,6 +1,6 @@
 # DoParallel
 
-DoParallel utilizes AWS Lambda and AWS SQS to execute a list of tasks (represented as a job) in parallel. Each task runs as a separate Lambda instance and reports it's return value and status as a message to it's corresponding job's SQS queue. After each task is complete and has submitted it's message to the queue, the queue is checked to see if all the tasks for the job are done. When all tasks in a job are completed, all messages are retrieved from the job's queue to collect each tasks results, a final results object is returned.
+DoParallel utilizes AWS Lambda and AWS DynamoDB to execute a list of tasks (represented as a job) in parallel. When a job is sent to DoParallel, an entry for the job and all of it's tasks is made in DynamoDB. Each task runs as a separate Lambda instance. After each task is complete and has updated it's status and submitted it's result to DynamoDB, the job is checked to see if all it's tasks are complete. When all tasks in a job are completed, all task results are retrieved from the DynamoDB and a final results object is returned.
 
 ## Getting Started
 
@@ -105,7 +105,7 @@ When all tasks in your job have finished, a results object will be posted to you
 
 ```
 {
-  "status": "Success",
+  "status": "Complete",
   "msg:": "Job Finished",
   "result": {
     "1": {

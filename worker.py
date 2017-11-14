@@ -1,7 +1,7 @@
 import requests
-import boto3
 import os
 import json
+from dbliason import DatabaseLiason
 
 
 class Worker(object):
@@ -13,52 +13,50 @@ class Worker(object):
         self.total = payload['total']
         self.id = payload['id']
         self.job_id = payload['job_id']
+        self.task_id = payload['task_id']
+        self.job_status = payload['job_status']
         self.callback = payload['callback']
+        self.dbliason = DatabaseLiason()
 
 
     def do_task(self):
-        print('worker: do task')
-        print(self.endpoint)
-        print(self.params)
         response = requests.post(
             self.endpoint,
             json=json.dumps(self.params)
         )
         self.report_task(response.json())
-        self.check_job_status()
+        self.notify_manager()
 
         return {"status": "Success", "msg": "Task Executed"}
 
 
+    def add_job_to_db(self, job):
+        self.dbliason.add_item(job, 'Tasks')
+
+
+    def update_job_task(self, response):
+        key = {
+            'job_id': self.job_id,
+            'task_id': self.task_id
+        }
+        expression = "set task_status = :s, task_result = :r"
+
+        values = {
+            ':s': "Complete",
+            ':r': response
+
+        }
+
+        self.dbliason.update_item(key, expression, values, 'Tasks')
+
+
+
     def report_task(self, response):
-        print('report task response:')
-        print(response)
-        sqs = boto3.resource('sqs')
-        queue = sqs.get_queue_by_name(QueueName=self.job_id)
-        queue.send_message(MessageBody=json.dumps(response), MessageAttributes={
-            'Status': {
-                'StringValue': 'Complete',
-                'DataType': 'String'
-            },
-            'Task': {
-                'StringValue': str(self.id),
-                'DataType': 'String'
-            }
-        })
-        print('sent message to queue')
+        self.update_job_task(response)
 
-
-    def check_job_status(self):
-        print('check queue')
-        sqs = boto3.resource('sqs')
-        queue = sqs.get_queue_by_name(QueueName=self.job_id)
-        completed_tasks = int(queue.attributes.get('ApproximateNumberOfMessages'))
-        if completed_tasks == self.total:
-            self.notify_manager()
 
 
     def notify_manager(self):
-        print('notify manager')
         url = os.environ.get('FINISH_JOB_URL', None)
         if url is None:
             return {"status": "Error", "msg": "FINISH_JOB_URL not set."}

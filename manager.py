@@ -1,7 +1,7 @@
 import requests
 import os
 import uuid
-import boto3
+from dbliason import DatabaseLiason
 
 
 class Manager(object):
@@ -9,67 +9,116 @@ class Manager(object):
     def __init__(self, payload):
         self.payload = payload
         self.callback = self.payload['callback']
+        self.dbliason = DatabaseLiason()
+        self.setup_jobs_table()
+        self.setup_tasks_table()
+
+
+    def setup_jobs_table(self):
+        if not self.dbliason.table_exists('Jobs'):
+            self.dbliason.create_jobs_table()
+
+
+    def setup_tasks_table(self):
+        self.dbliason = DatabaseLiason()
+        if not self.dbliason.table_exists('Tasks'):
+            self.dbliason.create_tasks_table()
+
+
+    def add_job_to_db(self, job):
+        self.dbliason.add_item(job, 'Jobs')
+
+
+    def add_tasks_to_db(self, tasks):
+        for task in tasks:
+            self.dbliason.add_item(tasks[task], 'Tasks')
 
 
     def do_job(self):
-        print('manager: do job!')
         self.tasks = self.payload['tasks']
         self.job_id = str(uuid.uuid4())
-        sqs = boto3.resource('sqs')
-        sqs.create_queue(QueueName=self.job_id)
         url = os.environ.get('DO_TASK_URL', None)
-
+        job_tasks = {}
         if url is None:
             return {"status": "Error", "msg": "DO_TASK_URL not set."}
 
         for i, task in enumerate(self.tasks):
-            print('task:')
-            print(task)
+
+            job_tasks['task{}'.format(i)] = {
+                'task_id': 'task{}'.format(i),
+                'job_id': self.job_id,
+                'endpoint': task['endpoint'],
+                'params': task['params'],
+                'task_status': 'Pending'
+            }
+        job = {
+            'job_id': self.job_id,
+            'job_status': 'Pending',
+
+        }
+
+        self.add_job_to_db(job)
+        self.add_tasks_to_db(job_tasks)
+        for i, task in enumerate(self.tasks):
             data = {
                 'endpoint': task['endpoint'],
                 'params': task['params'],
                 'total': len(self.tasks),
                 'id': i,
                 'job_id': self.job_id,
-                'callback': self.callback
+                'callback': self.callback,
+                'job_status': 'Pending',
+                'task_id': 'task{}'.format(i),
             }
             requests.post(
                 url,
                 json=data,
             )
+
+
         return {"status": "Success", "msg": "Job Executed"}
 
 
-    def finish_job(self):
-        print('finish job')
-        self.job_id = self.payload['job_id']
-        self.total = self.payload['total']
-        result = self.collect_work()
-        return {"status": "Success", "msg": "Job Finished", "result": result}
+    def update_job_status(self, status):
+        key = {
+            'job_id': self.job_id,
+            'job_status': 'Pending'
+        }
+        self.dbliason.delete_item(key, 'Jobs')
+        self.dbliason.add_item(
+            {
+                'job_id': self.job_id,
+                'job_status': 'Complete'
+            },
+            'Jobs'
+        )
 
+
+
+    def finish_job(self):
+        self.update_job_status('Complete')
+        result = self.collect_work()
+        return {"status": "Complete", "msg": "Job Finished", "result": result}
+
+
+    def check_job(self):
+        self.job_id = self.payload['job_id']
+        tasks = self.dbliason.get_job_tasks(self.job_id, 'Tasks')
+        all_complete = True
+        for task in tasks:
+            if task['task_status'] != 'Complete':
+                all_complete = False
+        if all_complete:
+            self.finish_job()
 
     def collect_work(self):
-        """ Use self.job_id to get all task reports in SQS and compile
-            final results
-        """
-        print('collect work')
         results = {}
-        sqs = boto3.resource('sqs')
-        queue = sqs.get_queue_by_name(QueueName=self.job_id)
-        message_counter = 0
-        while message_counter < self.total:
-            for message in queue.receive_messages(MessageAttributeNames=['Task', 'Status'], MaxNumberOfMessages=10):
-                if message.message_attributes is not None:
-                    task_id = message.message_attributes.get('Task').get('StringValue')
-                    status = message.message_attributes.get('Status').get('StringValue')
-                    result = message.body
-                    results[task_id] = {
-                        'status': status,
-                        'result': result
-                    }
-                message.delete()
-                message_counter = message_counter + 1
-        queue.delete()
+        tasks = self.dbliason.get_job_tasks(self.job_id, 'Tasks')
+        for task in tasks:
+            results[task['task_id']] = {
+                'status': task['task_status'],
+                'result': task['task_result']
+            }
         print('results:')
         print(results)
 
