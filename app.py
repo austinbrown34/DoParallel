@@ -33,6 +33,16 @@ def finish_job():
     return jsonify(response)
 
 
+@app.route('/v1/submit', methods=['POST'])
+def submit_work():
+    if not (request.json):
+        abort(400)
+    worker = Worker(request.json)
+    response = worker.submit_work()
+
+    return jsonify(response)
+
+
 @app.route('/v1/task', methods=['POST'])
 def do_task():
     if not (request.json):

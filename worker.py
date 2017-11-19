@@ -19,13 +19,17 @@ class Worker(object):
         self.dbliason = DatabaseLiason()
 
 
-    def do_task(self):
-        response = requests.post(
-            self.endpoint,
-            json=self.params
-        )
-        self.report_task(response.json())
+    def submit_work(self):
+        self.report_task(self.payload['result'])
         self.notify_manager()
+
+
+    def do_task(self):
+        self.payload['submit_work_url'] = os.environ.get('SUBMIT_WORK_URL', None)
+        requests.post(
+            self.endpoint,
+            json=self.payload
+        )
 
         return {"status": "Success", "msg": "Task Executed"}
 
