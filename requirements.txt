@@ -10,6 +10,9 @@ durationpy==0.5
 Flask==0.12.2
 future==0.16.0
 futures==3.1.1
+gevent==1.2.2
+greenlet==0.4.12
+grequests==0.3.0
 hjson==3.0.1
 idna==2.6
 itsdangerous==0.24

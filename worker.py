@@ -22,7 +22,7 @@ class Worker(object):
     def do_task(self):
         response = requests.post(
             self.endpoint,
-            json=json.dumps(self.params)
+            json=self.params
         )
         self.report_task(response.json())
         self.notify_manager()

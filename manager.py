@@ -1,4 +1,5 @@
 import requests
+import grequests
 import os
 import uuid
 from dbliason import DatabaseLiason
@@ -59,6 +60,8 @@ class Manager(object):
 
         self.add_job_to_db(job)
         self.add_tasks_to_db(job_tasks)
+        # headers = {'X-Amz-Invocation-Type': 'Event'}
+        data_list = []
         for i, task in enumerate(self.tasks):
             data = {
                 'endpoint': task['endpoint'],
@@ -70,10 +73,17 @@ class Manager(object):
                 'job_status': 'Pending',
                 'task_id': 'task{}'.format(i),
             }
-            requests.post(
-                url,
-                json=data,
-            )
+            data_list.append(data)
+            # print('Starting post')
+            # requests.post(
+            #     url,
+            #     json=data,
+            #
+            # )
+            # print('Done Posting')
+
+        rs = (grequests.post(url, json=d) for d in data_list)
+        grequests.map(rs)
 
 
         return {"status": "Success", "msg": "Job Executed"}
