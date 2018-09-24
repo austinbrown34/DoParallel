@@ -20,6 +20,7 @@ class Worker(object):
 
 
     def submit_work(self):
+        print('Submitting work for {}'.format(self.task_id))
         self.report_task(self.payload['result'])
         self.notify_manager()
 
