@@ -122,6 +122,9 @@ class Manager(object):
         self.update_job_status('Complete')
         result = self.collect_work()
         self.update_job_result(result)
+        print('calling callback:')
+        r = requests.post(self.callback, json=result)
+        print(r)
         return {"status": "Complete", "msg": "Job Finished", "result": result}
 
 
