@@ -10,7 +10,8 @@ from botocore.exceptions import ClientError
 def datetime_handler(x):
     if isinstance(x, datetime.datetime):
         return x.isoformat()
-    raise TypeError("Unknown type")
+    return None
+    # raise TypeError("Unknown type")
 
 
 class DecimalEncoder(json.JSONEncoder):

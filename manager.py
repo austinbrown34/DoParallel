@@ -121,6 +121,7 @@ class Manager(object):
     def finish_job(self):
         self.update_job_status('Complete')
         result = self.collect_work()
+        result['payload'] = self.payload
         self.update_job_result(result)
         print('calling callback:')
         r = requests.post(self.callback, json=result)
@@ -146,6 +147,7 @@ class Manager(object):
                 'status': task['task_status'],
                 'result': task['task_result']
             }
+
         print('results:')
         print(results)
 
