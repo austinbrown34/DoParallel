@@ -68,7 +68,8 @@ class Worker(object):
         data = {
             'job_id': self.job_id,
             'callback': self.callback,
-            'total': self.total
+            'total': self.total,
+            'params': self.params
         }
         requests.post(
             url,
